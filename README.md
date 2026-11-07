@@ -1,1502 +1,593 @@
 # ☕ Coffee Chat Roulette
 
-> 행사장에서 **“누구와 이야기해야 하지?”**, **“무슨 말을 걸어야 하지?”**를 해결하는 네트워킹 추천 서비스
+> **단어 하나로 첫 대화를 시작합니다.**
 
-Coffee Chat Roulette는 Growth Log와 같은 오프라인 커뮤니티 행사에서 참가자의 **직군, 관심사, 배우고 싶은 것, 도와줄 수 있는 것**을 기반으로 지금 만나면 좋은 사람을 추천해주는 서비스입니다.
-
-단순 랜덤 매칭이 아니라, 사용자의 네트워킹 목적에 따라 후보를 필터링하고 **추천 이유와 대화 시작 주제까지 함께 제공**합니다.
-
----
-
-## 🎯 Problem
-
-오프라인 행사에는 다양한 사람들이 모이지만 실제 네트워킹은 생각보다 쉽게 발생하지 않습니다.
-
-특히 처음 참가한 사람은 다음과 같은 어려움을 겪습니다.
-
-- 누가 어떤 사람인지 알기 어렵습니다.
-- 누구에게 먼저 말을 걸어야 할지 모르겠습니다.
-- 처음 보는 사람에게 말을 걸 명분이 없습니다.
-- 만나더라도 어떤 이야기를 시작해야 할지 어렵습니다.
-- 결국 기존에 알고 있던 사람과만 이야기하게 됩니다.
-
-즉,
-
-> **사람이 없는 것이 아니라, 연결을 시작할 장치가 부족합니다.**
-
-Coffee Chat Roulette는 이 문제를 해결합니다.
+행사장에서 처음 만난 사람과 무슨 이야기를 해야 할지 고민될 때,  
+하나의 키워드를 입력하면 **사용자 자신의 AI(Claude / ChatGPT)**가 아이스브레이킹 질문을 만들고, 웹에서 룰렛을 돌려 오늘의 질문 하나를 뽑아주는 서비스입니다.
 
 ---
 
-# 💡 Solution
+## Why
 
-사용자는 간단한 프로필 정보를 등록합니다.
+오프라인 네트워킹에서 가장 어려운 순간은 사람을 만나는 것보다 **첫 질문을 꺼내는 순간**입니다.
 
-```text
-Role
-Mobile
-
-Interests
-AI
-Game
-Side Project
-
-Want to Learn
-React
-AI / LLM
-
-Can Help
-Unity
-C#
-Game Development
-```
-
-행사장에서 현재 원하는 네트워킹 목적을 선택합니다.
+Coffee Chat Roulette는 이 부담을 줄여줍니다.
 
 ```text
-오늘 어떤 사람을 만나고 싶나요?
-
-[ 나와 다른 분야 ]
-[ 관심사가 비슷한 사람 ]
-[ 내가 배울 수 있는 사람 ]
-[ 내가 도울 수 있는 사람 ]
-[ 완전 랜덤 ]
-```
-
-서비스는 참가자 정보를 비교하여 조건에 맞는 사람을 추천합니다.
-
-```text
-☕ Today's Coffee Chat
-
-김민수
-Frontend Developer
-
-Interests
-AI · Side Project · Startup
-
-Why this match?
-
-✓ 당신과 다른 직군이에요.
-✓ AI에 관심이 있어요.
-✓ React를 알려줄 수 있어요.
-
-Conversation Starter
-
-"최근 AI를 프로젝트에서
-어떻게 활용하고 계세요?"
-
-[ ☕ 만났어요 ]
-[ 🎲 다른 사람 ]
-```
-
----
-
-# 🔑 Core Concept
-
-Coffee Chat Roulette의 핵심은 단순히 사람을 추천하는 것이 아닙니다.
-
-```text
-Discover
-   ↓
-Match
-   ↓
-Talk
-   ↓
-Connect
-```
-
-사용자가 실제 대화를 시작할 수 있도록 다음 세 가지를 제공합니다.
-
-### 1. Who
-
-누구를 만나면 좋은지 추천합니다.
-
-### 2. Why
-
-왜 이 사람을 추천했는지 알려줍니다.
-
-### 3. What to Talk About
-
-어떤 이야기를 시작하면 좋은지 알려줍니다.
-
----
-
-# 👤 User Profile
-
-사용자 입력은 자유 입력보다 **미리 준비된 태그 선택 방식**을 사용합니다.
-
-행사장에서 빠르게 사용할 수 있고, 매칭 기준도 명확하게 유지할 수 있습니다.
-
----
-
-## Role
-
-사용자의 주요 직군입니다.
-
-**1개만 선택합니다.**
-
-```text
-Frontend
-Backend
-Mobile
-Game
-AI
-Designer
-Product Manager
-Marketing
-Founder
-Student
-```
-
-예시:
-
-```text
-Role
-
-[ Frontend ]
-[ Backend ]
-[ Mobile ✓ ]
-[ Game ]
-[ AI ]
-[ Design ]
-```
-
----
-
-# ❤️ Interests
-
-현재 관심 있는 주제입니다.
-
-> **“어떤 이야기를 좋아하는가?”**
-
-최대 3개까지 선택합니다.
-
-```text
-AI
-Side Project
-Startup
-Open Source
-Career
-Community
-Game
-Product
-Automation
-Content
-```
-
-예시:
-
-```text
-Interests
-
-[ AI ✓ ]
-[ Game ✓ ]
-[ Side Project ✓ ]
-```
-
----
-
-# 📚 Want to Learn
-
-현재 배우고 싶은 기술이나 분야입니다.
-
-최대 2~3개를 선택합니다.
-
-```text
-React
-Vue
-Spring
-Node.js
-Unity
-Flutter
-Python
-AI / LLM
-AWS
-Figma
-UX
-Product
-Marketing
-```
-
-예시:
-
-```text
-Want to Learn
-
-[ React ✓ ]
-[ AI / LLM ✓ ]
-```
-
----
-
-# 🤝 Can Help
-
-다른 사람에게 알려주거나 도움을 줄 수 있는 기술입니다.
-
-`Want to Learn`과 같은 Skill Tag Pool을 사용합니다.
-
-예시:
-
-```text
-Can Help
-
-[ Unity ✓ ]
-[ C# ✓ ]
-[ Game Development ✓ ]
-```
-
----
-
-# 🧩 Profile Data
-
-최종적으로 사용자의 프로필은 다음과 같은 형태로 저장합니다.
-
-```js
-{
-  role: "Mobile",
-
-  interests: [
-    "AI",
-    "Game",
-    "Side Project"
-  ],
-
-  wantToLearn: [
-    "React",
-    "AI/LLM"
-  ],
-
-  canHelp: [
-    "Unity",
-    "C#",
-    "Game Development"
-  ]
-}
-```
-
-MVP에서는 `localStorage`에 저장합니다.
-
----
-
-# 🎯 Networking Goals
-
-Roulette를 실행하기 전에 사용자가 현재 원하는 네트워킹 목적을 선택합니다.
-
----
-
-## 1. 나와 다른 분야
-
-다른 직군의 참가자를 추천합니다.
-
-```text
-My Role
-Mobile
-
+Keyword
 ↓
-
-Other Role
-Frontend
-Backend
-Design
-AI
-...
-```
-
-기본 조건:
-
-```js
-me.role !== other.role
-```
-
-추가로 공통 관심사가 있는 사람에게 높은 점수를 줄 수 있습니다.
-
-예:
-
-```text
-나
-Mobile
-AI 관심
-
-상대
-Backend
-AI 관심
-
-→ 다른 직군 + 공통 관심사
-```
-
----
-
-# 2. 관심사가 비슷한 사람
-
-두 사용자의 `interests`를 비교합니다.
-
-```text
-나
-
-AI
-Game
-Side Project
-
-상대
-
-AI
-Startup
-Side Project
-```
-
-교집합:
-
-```text
-AI
-Side Project
-```
-
-따라서:
-
-```text
-Common Interests: 2
-```
-
-공통 관심사가 많은 사람일수록 높은 점수를 받습니다.
-
----
-
-# 3. 내가 배울 수 있는 사람
-
-내가 배우고 싶은 것과 상대가 도와줄 수 있는 것을 비교합니다.
-
-```text
-My Want to Learn
-        ↓
-Other Can Help
-```
-
-예:
-
-```text
-나
-
-Want to Learn
-React
-AI
-
-상대
-
-Can Help
-React
-TypeScript
-```
-
-결과:
-
-```text
-React Match
-```
-
-추천 이유:
-
-```text
-✓ React 경험을 공유받을 수 있어요.
-```
-
----
-
-# 4. 내가 도울 수 있는 사람
-
-내가 도와줄 수 있는 것과 상대가 배우고 싶은 것을 비교합니다.
-
-```text
-My Can Help
-       ↓
-Other Want to Learn
-```
-
-예:
-
-```text
-나
-
-Can Help
-Unity
-Game Development
-
-상대
-
-Want to Learn
-Game Development
-React
-```
-
-결과:
-
-```text
-Game Development Match
-```
-
-추천 이유:
-
-```text
-✓ 당신의 Game Development 경험이 도움이 될 수 있어요.
-```
-
----
-
-# 5. 완전 랜덤
-
-아직 만나지 않은 참가자 중 한 명을 랜덤으로 추천합니다.
-
-```text
-Participants
-    ↓
-Exclude visited users
-    ↓
-Random
-```
-
-새로운 사람을 우연히 만날 수 있는 Roulette의 재미를 유지합니다.
-
----
-
-# 🧮 Matching Logic
-
-복잡한 AI 추천 시스템 대신 Rule Based Matching을 사용합니다.
-
-예:
-
-```js
-score =
-  commonInterestCount * 2 +
-  learnMatchCount * 3 +
-  helpMatchCount * 3 +
-  differentRoleBonus;
-```
-
-예를 들어:
-
-```text
-민수
-
-공통 관심사 2개
-+4
-
-배울 수 있는 기술 1개
-+3
-
-내가 도울 수 있는 기술 1개
-+3
-
-다른 직군
-+1
-
-Total
-11
-```
-
----
-
-# 🎲 Why Roulette?
-
-가장 높은 점수를 가진 사람을 무조건 추천하지 않습니다.
-
-상위 후보를 만든 뒤 그중 한 명을 랜덤으로 추천합니다.
-
-```text
-Candidates
-
-민수     11
-지윤      9
-현우      8
-Alex      3
-```
-
-상위 3명:
-
-```text
-민수
-지윤
-현우
-```
-
-그중 랜덤 선택:
-
-```js
-const candidates = rankedMembers.slice(0, 3);
-
-const selected =
-  candidates[
-    Math.floor(Math.random() * candidates.length)
-  ];
-```
-
-이를 통해
-
-```text
-Matching
-+
-Randomness
-```
-
-두 가지 경험을 동시에 제공합니다.
-
----
-
-# 💬 Conversation Starter
-
-사람만 추천하면 사용자는 다시 고민하게 됩니다.
-
-> “그래서 무슨 이야기를 하지?”
-
-Coffee Chat Roulette는 상대방의 관심사를 기반으로 대화 시작 질문도 제공합니다.
-
----
-
-## AI
-
-```text
-최근 AI를 실제 업무에서
-어떻게 활용하고 계세요?
-```
-
-```text
-요즘 가장 관심 있게 보고 있는
-AI 기술이 있나요?
-```
-
----
-
-## Side Project
-
-```text
-최근 진행하고 있는
-사이드 프로젝트가 있나요?
-```
-
-```text
-요즘 만들어보고 싶은
-서비스가 있으세요?
-```
-
----
-
-## Career
-
-```text
-요즘 커리어에서
-가장 고민하고 있는 게 있나요?
-```
-
----
-
-## Design
-
-```text
-최근 인상 깊었던
-서비스 UX가 있나요?
-```
-
----
-
-## Game
-
-```text
-최근 재미있게 플레이한
-게임이 있나요?
-```
-
----
-
-# Conversation Starter Data
-
-LLM 없이 미리 준비된 질문을 사용합니다.
-
-```js
-const conversationStarters = {
-  AI: [
-    "최근 AI를 실제 업무에서 어떻게 활용하고 계세요?",
-    "요즘 가장 관심 있게 보고 있는 AI 기술이 있나요?"
-  ],
-
-  "Side Project": [
-    "최근 진행 중인 사이드 프로젝트가 있나요?",
-    "만들어보고 싶은 서비스가 있으세요?"
-  ],
-
-  Career: [
-    "요즘 커리어에서 가장 고민하고 있는 게 있나요?"
-  ],
-
-  Game: [
-    "최근 재미있게 플레이한 게임이 있나요?"
-  ]
-};
-```
-
-상대방의 관심사 중 하나를 선택하여 질문을 보여줍니다.
-
----
-
-# 🔍 Why This Match?
-
-추천 결과에서는 단순한 Match Score보다 **추천 이유**를 보여주는 것이 중요합니다.
-
-Bad:
-
-```text
-92% Match
-```
-
-Better:
-
-```text
-Why this match?
-
-✓ 당신과 다른 직군이에요.
-✓ AI에 관심이 같아요.
-✓ React를 알려줄 수 있어요.
-```
-
-사용자가 추천 결과를 이해할 수 있어야 실제 행동으로 이어질 가능성이 높습니다.
-
----
-
-# ☕ Connected
-
-실제로 상대방과 대화한 뒤:
-
-```text
-[ ☕ 만났어요 ]
-```
-
-버튼을 선택합니다.
-
-해당 참가자는 오늘 만난 사람으로 기록됩니다.
-
-```js
-visitedMemberIds.push(member.id);
-```
-
-다음 Roulette에서는 제외됩니다.
-
-```text
-All Members
-     ↓
-Exclude Connected Members
-     ↓
-Matching
-     ↓
-Recommendation
-```
-
----
-
-# 💾 Local Storage
-
-MVP에서는 Backend 없이 브라우저에 정보를 저장합니다.
-
-```js
-localStorage.setItem(
-  "coffee-chat-profile",
-  JSON.stringify(profile)
-);
-```
-
-만난 사람:
-
-```js
-localStorage.setItem(
-  "coffee-chat-history",
-  JSON.stringify(history)
-);
-```
-
-GitHub Pages만으로 서비스 전체를 실행할 수 있습니다.
-
----
-
-# 📊 Today's Connections
-
-사용자가 오늘 누구를 만났는지 보여줍니다.
-
-```text
-Today's Connections
-
-☕ 4 Coffee Chats
-
-민수
-Backend / AI
-
-지윤
-Designer / UX
-
-현우
-Frontend / React
-
-유진
-Product / Startup
-```
-
-간단한 통계도 표시할 수 있습니다.
-
-```text
-4 New Connections
-
-3 Different Roles
-
-6 Shared Interests
-```
-
----
-
-# 🖥 User Flow
-
-전체 사용자 흐름입니다.
-
-```text
-START
-
+User's AI
 ↓
-
-Profile Setup
-
-Role
-Interest
-Want to Learn
-Can Help
-
+Questions
 ↓
-
-Select Networking Goal
-
-↓
-
-Matching
-
-↓
-
-Coffee Chat Result
-
-↓
-
-Why This Match?
-
-↓
-
-Conversation Starter
-
-↓
-
-Meet Offline
-
-↓
-
-"만났어요"
-
-↓
-
-Save Connection
-
-↓
-
-Next Coffee Chat
-```
-
----
-
-# 🔄 Application State
-
-애플리케이션 상태 흐름은 다음과 같습니다.
-
-```text
-INIT
-
-↓
-
-PROFILE_SETUP
-
-↓
-
-SELECT_GOAL
-
-↓
-
-MATCHING
-
-↓
-
-RESULT
-
-├── REROLL
-│      ↓
-│   MATCHING
-│
-└── CONNECTED
-       ↓
-   SAVE_HISTORY
-       ↓
-    SUMMARY
-       ↓
-   SELECT_GOAL
-```
-
----
-
-# 📱 Screens
-
-MVP에서는 화면을 최대한 작게 구성합니다.
-
----
-
-## Screen 1 — Profile
-
-```text
-Tell us about you
-
-Role
-[ Mobile ]
-
-Interests
-[ AI ] [ Game ] [ Side Project ]
-
-Want to Learn
-[ React ] [ AI ]
-
-Can Help
-[ Unity ] [ C# ]
-
-[ Start Networking ]
-```
-
----
-
-# Screen 2 — Networking Goal
-
-```text
-Who do you want to meet?
-
-[ 다른 분야 ]
-
-[ 관심사가 비슷한 사람 ]
-
-[ 내가 배울 수 있는 사람 ]
-
-[ 내가 도울 수 있는 사람 ]
-
-[ 🎲 Surprise Me ]
-```
-
----
-
-# Screen 3 — Roulette
-
-```text
-          ☕
-
-Finding your
-Coffee Chat...
-
-민수
-지윤
-현우
-Alex
-...
-```
-
-카드가 빠르게 바뀌거나 셔플되는 간단한 애니메이션을 사용합니다.
-
----
-
-# Screen 4 — Result
-
-```text
-☕ Today's Coffee Chat
-
-김민수
-
-Backend / AI
-
-AI · LLM · Side Project
-
-
-Why this match?
-
-✓ 당신과 다른 직군
-✓ AI 공통 관심사
-✓ React 경험 보유
-
-
-Conversation Starter
-
-"최근 AI를 프로젝트에
-어떻게 활용하고 계세요?"
-
-
-[ ☕ 만났어요 ]
-
-[ 🎲 다른 사람 ]
-```
-
----
-
-# Screen 5 — History
-
-```text
-Today's Connections
-
-☕ 3 People
-
-민수
-Backend
-
-지윤
-Designer
-
-현우
-Frontend
-
-
-[ Find Next Coffee Chat ]
-```
-
----
-
-# 🗃 Mock Member Data
-
-100분 해커톤에서는 실제 Growth Log 회원 DB 대신 Mock Data를 사용합니다.
-
-```js
-const members = [
-  {
-    id: 1,
-    name: "민수",
-    role: "Backend",
-
-    interests: [
-      "AI",
-      "Side Project"
-    ],
-
-    wantToLearn: [
-      "Product",
-      "Game Development"
-    ],
-
-    canHelp: [
-      "Spring",
-      "AWS",
-      "AI/LLM"
-    ]
-  },
-
-  {
-    id: 2,
-    name: "지윤",
-    role: "Designer",
-
-    interests: [
-      "Product",
-      "Community",
-      "AI"
-    ],
-
-    wantToLearn: [
-      "Frontend"
-    ],
-
-    canHelp: [
-      "Figma",
-      "UX"
-    ]
-  },
-
-  {
-    id: 3,
-    name: "현우",
-    role: "Frontend",
-
-    interests: [
-      "Open Source",
-      "AI",
-      "Startup"
-    ],
-
-    wantToLearn: [
-      "AI/LLM",
-      "AWS"
-    ],
-
-    canHelp: [
-      "React",
-      "TypeScript"
-    ]
-  }
-];
-```
-
-약 **10~20명의 참가자 데이터**만 준비해도 충분히 자연스러운 데모가 가능합니다.
-
----
-
-# 🏷 Tag Design
-
-태그는 너무 많이 제공하지 않습니다.
-
-태그가 많으면 입력 시간이 길어지고 매칭 결과 역시 의미가 약해집니다.
-
-MVP 권장값:
-
-```text
-Role
-1개
-
-Interest
-최대 3개
-
-Want to Learn
-최대 2개
-
-Can Help
-최대 2개
-```
-
-전체 입력을 **30초 안에 완료할 수 있는 수준**으로 유지합니다.
-
----
-
-# ⚠️ Interest vs Skill
-
-Interest와 Skill은 명확하게 구분합니다.
-
-### Interest
-
-```text
-무슨 이야기를 좋아하는가?
-```
-
-예:
-
-```text
-AI
-Startup
-Game
-Community
-Side Project
-```
-
-### Skill
-
-```text
-무엇을 배우거나
-알려줄 수 있는가?
-```
-
-예:
-
-```text
-React
-Spring
-Unity
-AWS
-Figma
-AI / LLM
-```
-
-따라서 `Want to Learn`과 `Can Help`는 동일한 Skill Pool을 공유합니다.
-
-```js
-const skillTags = [
-  "React",
-  "Spring",
-  "Unity",
-  "Flutter",
-  "Python",
-  "AI/LLM",
-  "AWS",
-  "Figma",
-  "UX",
-  "Product",
-  "Marketing"
-];
-```
-
----
-
-# 🛠 Tech Stack
-
-GitHub Pages 정적 배포를 기준으로 합니다.
-
-```text
-Frontend
-HTML / CSS / JavaScript
-
-or
-
-Vite
-React
-TypeScript
-```
-
-Backend:
-
-```text
-None
-```
-
-Database:
-
-```text
-None
-```
-
-Data:
-
-```text
-Mock JSON
-+
-localStorage
-```
-
----
-
-# ⏱ 100-Minute Hackathon Scope
-
-## 0 ~ 15 min
-
-UI 및 기본 레이아웃
-
-- Profile
-- Networking Goal
-- Result Card
-
----
-
-## 15 ~ 30 min
-
-Mock Member Data
-
-- 10~20명
-- Role
-- Interests
-- Want to Learn
-- Can Help
-
----
-
-## 30 ~ 50 min
-
-Matching Logic
-
-```text
-Goal
-↓
-Filter
-↓
-Score
-↓
-Top Candidates
-↓
-Random
-```
-
----
-
-## 50 ~ 65 min
-
-Result UI
-
-- Profile
-- Why This Match
-- Conversation Starter
-
----
-
-## 65 ~ 75 min
-
-Connection History
-
-- `만났어요`
-- 이미 만난 사용자 제외
-- localStorage
-
----
-
-## 75 ~ 90 min
-
-UX / Animation
-
-- Roulette
-- Card Transition
-- Connection Complete
-
----
-
-## 90 ~ 100 min
-
-GitHub Pages Deploy
-
-- 모바일 확인
-- 데모 시나리오 테스트
-- 발표 준비
-
----
-
-# ✅ MVP
-
-100분 안에 다음 기능만 완성하는 것을 목표로 합니다.
-
-### Must
-
-- [x] 프로필 태그 선택
-- [x] Networking Goal 선택
-- [x] 참가자 매칭
-- [x] Roulette 추천
-- [x] Why This Match
-- [x] Conversation Starter
-- [x] 만난 사람 저장
-- [x] 이미 만난 사람 제외
-
-### Nice to Have
-
-- [ ] Coffee Chat 횟수
-- [ ] Networking Level
-- [ ] Roulette Animation
-- [ ] Networking Bingo
-- [ ] QR Profile
-- [ ] 행사별 참가자 Pool
-
----
-
-# ❌ Out of Scope
-
-100분 MVP에서는 다음 기능을 구현하지 않습니다.
-
-- 로그인
-- 회원가입
-- 실제 Growth Log 회원 DB
-- Backend
-- 실시간 채팅
-- 메시지 전송
-- AI 기반 추천
-- QR Scanner
-- 실제 위치 기반 추천
-- 복잡한 추천 알고리즘
-
----
-
-# 🚀 Future
-
-해커톤 이후 실제 서비스로 발전시킨다면 다음 기능을 추가할 수 있습니다.
-
----
-
-## Growth Log Profile Integration
-
-```text
-Growth Log Profile
-
-↓
-
-Role
-Skills
-Interests
-
-↓
-
-Coffee Chat Matching
-```
-
-기존 Growth Log 프로필을 그대로 매칭 데이터로 활용합니다.
-
----
-
-## Event Participant Pool
-
-행사에 체크인한 사람만 추천합니다.
-
-```text
-Growth Log Meetup #12
-
-28 People Here
-
-↓
-
-Coffee Chat Roulette
-```
-
----
-
-## QR Connection
-
-상대방과 실제로 만났을 때 QR을 스캔합니다.
-
-```text
-Meet
-
-↓
-
-QR Scan
-
-↓
-
-Connection Complete
-```
-
----
-
-## Networking Bingo
-
-Coffee Chat과 네트워킹 미션을 연결합니다.
-
-```text
-Mission
-
-"다른 직군의 사람 만나기"
-
-↓
-
-Coffee Chat Roulette
-
-↓
-
-Designer 추천
-
-↓
-
-Meet
-
-↓
-
-Mission Complete
-```
-
----
-
-## Need / Offer Matching
-
-Skill Exchange를 더 강화할 수 있습니다.
-
-```text
-You
-
-Need
-React
-
-Offer
-Unity
-
-
-Alex
-
-Need
-Game Development
-
-Offer
-React
-
-
-↓
-
-Perfect Coffee Chat
-
-React ↔ Unity
-```
-
----
-
-# 🎤 Demo Scenario
-
-발표에서는 기능 설명보다 문제 상황으로 시작합니다.
-
-```text
-“커뮤니티 행사에 왔습니다.
-
-주변에 30명이 있지만
-아는 사람은 한 명도 없습니다.
-
-누구에게 말을 걸어야 할까요?”
-```
-
-Coffee Chat Roulette 실행.
-
-```text
-오늘 만나고 싶은 사람
-
-[ 나와 다른 분야 ]
-```
-
-Roulette:
-
-```text
-☕
-
-Finding someone...
-```
-
-Result:
-
-```text
-김민수
-
-Backend Developer
-
-
-Why this match?
-
-✓ 당신은 Mobile Developer
-✓ 민수님은 Backend Developer
-✓ 두 사람 모두 AI에 관심이 있습니다.
-```
-
-Conversation Starter:
-
-```text
-“최근 AI를 실제 프로젝트에서
-어떻게 활용하고 계세요?”
-```
-
-대화 후:
-
-```text
-[ ☕ 만났어요 ]
-```
-
-결과:
-
-```text
-🎉 New Connection
-
-1 Coffee Chat Completed
-```
-
----
-
-# 🌱 Why Growth Log?
-
-Growth Log에는 이미 다양한 분야의 사람들이 모여 있습니다.
-
-하지만 좋은 사람들이 한 공간에 존재하는 것과 실제 연결이 만들어지는 것은 다른 문제입니다.
-
-Coffee Chat Roulette는
-
-```text
-People
-↓
-Discovery
+Roulette
 ↓
 Conversation
-↓
-Connection
 ```
 
-이라는 흐름을 만들어줍니다.
+예를 들어 `게임`을 입력하면 AI가 다음과 같은 질문들을 만들어줍니다.
+
+```text
+"인생 게임 OST 하나를 고른다면?"
+"게임 속 직업 하나를 현실에서 해본다면?"
+"최근 시간 가는 줄 모르고 했던 게임은?"
+```
+
+그중 하나를 룰렛으로 뽑아 바로 대화를 시작합니다.
 
 ---
 
-# ✨ Final Message
+## Concept
 
-> **Coffee Chat Roulette는 사람을 랜덤으로 뽑는 서비스가 아닙니다.**
+Coffee Chat Roulette의 핵심은 세 가지입니다.
 
-> **지금 나에게 의미 있는 사람을 발견하고, 실제 대화를 시작할 수 있도록 도와주는 네트워킹 도구입니다.**
+### 1. Keyword
 
-### Discover → Talk → Connect
+사용자는 대화하고 싶은 주제 하나만 입력합니다.
 
-**Coffee Chat Roulette ☕**
+```text
+게임
+커피
+여행
+개발
+음악
+영화
+```
+
+복잡한 프로필이나 회원가입은 없습니다.
+
+### 2. Bring Your Own AI
+
+서비스에서 별도의 LLM API를 호출하지 않습니다.
+
+사용자가 이미 사용하고 있는 Claude 또는 ChatGPT가 MCP를 통해 질문을 생성합니다.
+
+```text
+Coffee Chat Web
+        ↓
+    Session Code
+        ↓
+Claude / ChatGPT
+        ↓
+   MCP Server
+        ↓
+   Questions
+```
+
+이를 통해 서버에서 별도의 LLM API Key나 토큰 비용을 사용하지 않는 구조를 실험합니다.
+
+### 3. Roulette
+
+생성된 질문을 목록으로 보여주지 않습니다.
+
+질문들이 빠르게 지나가는 Roulette Animation 이후 하나의 질문을 선택합니다.
+
+```text
+🎰
+
+게임 속 직업 하나를...
+최근 재미있게 한...
+인생 게임 OST...
+
+↓
+
+💬 오늘의 첫 질문
+
+"인생 게임 OST 하나를 고른다면?"
+```
+
+`🎲 다시 돌리기`를 누르면 다른 질문을 뽑을 수 있습니다.
+
+---
+
+# User Flow
+
+```text
+페이지 접속
+↓
+단어 하나 입력
+↓
+질문 만들기
+↓
+세션 코드 발급
+↓
+Claude / ChatGPT에 요청
+↓
+AI가 질문 생성
+↓
+웹에서 질문 수신
+↓
+룰렛
+↓
+오늘의 첫 질문
+↓
+대화 시작
+```
+
+---
+
+# MCP Flow
+
+웹에서 키워드를 입력합니다.
+
+```text
+게임
+```
+
+세션 코드가 생성됩니다.
+
+```text
+ABCD
+```
+
+웹에서는 사용자에게 다음 문구를 제공합니다.
+
+```text
+커피챗 세션 ABCD 질문 만들어줘
+```
+
+사용자가 자신의 Claude 또는 ChatGPT에 해당 문장을 입력합니다.
+
+AI는 Coffee Chat MCP를 통해 세션 정보를 확인합니다.
+
+```text
+get_request("ABCD")
+```
+
+AI가 해당 키워드에 어울리는 아이스브레이킹 질문을 생성한 뒤 다시 MCP를 통해 전달합니다.
+
+```text
+submit_questions(
+  "ABCD",
+  [
+    "...",
+    "...",
+    "..."
+  ]
+)
+```
+
+웹은 질문이 도착하면 자동으로 Roulette 화면으로 전환합니다.
+
+---
+
+# Question Style
+
+질문은 크게 두 가지 느낌을 섞습니다.
+
+### Comfortable
+
+누구나 부담 없이 답할 수 있는 질문.
+
+```text
+"최근 재미있게 한 게임이 있나요?"
+```
+
+### Unexpected
+
+조금 예상 밖이지만 가볍게 대화를 이어갈 수 있는 질문.
+
+```text
+"내 인생에 게임 BGM을 하나 깔 수 있다면 어떤 곡인가요?"
+```
+
+목표는 깊은 대화를 강요하는 것이 아니라 **첫 30초의 어색함을 줄이는 것**입니다.
+
+---
+
+# Safety
+
+처음 만난 사람과 사용하는 서비스이므로 질문은 가벼워야 합니다.
+
+다음과 같은 질문은 생성하지 않습니다.
+
+- 성적이거나 신체와 관련된 질문
+- 연애 경험을 묻는 질문
+- 연봉, 재산 등의 경제적 정보
+- 나이, 학벌 등의 개인정보
+- 결혼, 출산 등 가족 관련 질문
+- 종교나 정치 성향
+- 건강 및 질병
+- 외모나 능력에 대한 평가
+- 상대를 곤란하게 하거나 추궁하는 질문
+
+안전 규칙은 AI에게 전달하고, 제출된 질문은 서버에서도 간단한 필터를 거칩니다.
+
+---
+
+# UI / UX
+
+Coffee Chat Roulette는 독립된 AI 서비스처럼 보이기보다 **Growth Log의 새로운 네트워킹 Activity**처럼 디자인합니다.
+
+전체적으로 Growth Log의 기존 페이지가 가진
+
+```text
+작은 영문 Section Label
++
+큰 한국어 Headline
++
+짧은 설명
++
+명확한 CTA
+```
+
+구조를 사용합니다.
+
+화면은 기능을 많이 보여주기보다 **현재 해야 할 행동 하나에 집중**합니다.
+
+---
+
+## 01. Landing / Keyword
+
+```text
+COFFEE CHAT
+
+처음 만난 사람과
+무슨 이야기를 할까요?
+
+대화하고 싶은 주제를
+하나만 입력해보세요.
+
+┌──────────────────────┐
+│ 게임                  │
+└──────────────────────┘
+
+[ 질문 만들기 → ]
+```
+
+### UX
+
+첫 화면에서는 MCP나 AI 구조를 설명하지 않습니다.
+
+사용자가 알아야 할 것은 단 하나입니다.
+
+> **“단어 하나를 입력하세요.”**
+
+입력창과 CTA가 화면의 중심이 됩니다.
+
+하단에는 가볍게 예시를 제공합니다.
+
+```text
+AI · 여행 · 게임 · 커피 · 개발 · 음악
+```
+
+예시 키워드를 누르면 바로 Input에 들어가도록 합니다.
+
+---
+
+## 02. Waiting
+
+```text
+COFFEE CHAT
+
+AI에게 질문을
+부탁해볼까요?
+
+SESSION
+ABCD
+
+아래 문장을 내 AI에게 보내주세요.
+
+┌────────────────────────────┐
+│ 커피챗 세션 ABCD 질문 만들어줘 │
+└────────────────────────────┘
+
+[ 문장 복사하기 ]
+
+● 질문을 기다리고 있어요
+```
+
+### UX
+
+기술적인 `MCP`, `Tool`, `Polling` 같은 표현은 일반 사용자 화면에서 숨깁니다.
+
+대신 행동 중심으로 설명합니다.
+
+```text
+1. 문장을 복사하세요.
+2. Claude / ChatGPT에 붙여넣으세요.
+3. 이 화면으로 돌아오세요.
+```
+
+세션 코드 `ABCD`는 Growth Log의 숫자/KPI처럼 크고 명확하게 표현합니다.
+
+대기 상태에는 과한 Spinner보다 작은 Pulse 또는 Dot Animation을 사용합니다.
+
+---
+
+## 03. Roulette
+
+질문이 도착하면 사용자의 추가 입력 없이 자동으로 전환합니다.
+
+```text
+COFFEE CHAT
+
+오늘 어떤 이야기가
+나올까요?
+
+        🎰
+
+┌────────────────────────────┐
+│ 게임 속 직업 하나를...       │
+└────────────────────────────┘
+```
+
+질문 카드가 빠르게 교체되다가 점점 느려지고 하나에서 멈춥니다.
+
+### UX
+
+Roulette는 카지노 스타일로 만들지 않습니다.
+
+Coffee Chat의 가벼운 재미만 전달합니다.
+
+```text
+빠르게 전환
+↓
+점점 느려짐
+↓
+Result Card에서 Stop
+```
+
+전체 애니메이션은 짧게 유지합니다.
+
+---
+
+## 04. Result
+
+서비스에서 가장 중요한 화면입니다.
+
+```text
+TODAY'S QUESTION
+
+오늘의 첫 질문
+
+┌────────────────────────────┐
+│                            │
+│ "인생 게임 OST 하나를       │
+│  고른다면 어떤 곡인가요?"   │
+│                            │
+└────────────────────────────┘
+
+[ 🎲 다른 질문 뽑기 ]
+
+새로운 주제로 시작하기
+```
+
+### UX
+
+이 화면에서는 **질문이 Hero Content**입니다.
+
+다른 UI보다 질문의 가독성을 가장 중요하게 봅니다.
+
+질문은 큰 카드 안에서 충분한 여백을 갖고 표시합니다.
+
+`다른 질문 뽑기`는 Primary Action.
+
+`새로운 주제로 시작하기`는 Secondary Action으로 둡니다.
+
+---
+
+# Growth Log Style Direction
+
+Coffee Chat 페이지는 Growth Log 본 서비스와 시각적으로 이어져야 합니다.
+
+## Typography
+
+Growth Log처럼
+
+```text
+COFFEE CHAT
+작은 영문 Label
+
+처음 만난 사람과
+무슨 이야기를 할까요?
+큰 한국어 Headline
+```
+
+형태의 Typography Hierarchy를 사용합니다.
+
+텍스트를 많이 넣기보다 **짧은 문장을 크게 보여주는 방식**을 사용합니다.
+
+---
+
+## Layout
+
+Desktop에서는 콘텐츠 폭을 제한하고 중앙에 배치합니다.
+
+```text
+┌──────────────────────────────────┐
+│ Growth Log                       │
+│                                  │
+│          COFFEE CHAT             │
+│                                  │
+│       처음 만난 사람과            │
+│       무슨 이야기를 할까요?        │
+│                                  │
+│       [ Keyword Input ]          │
+│                                  │
+│       [ 질문 만들기 → ]           │
+│                                  │
+└──────────────────────────────────┘
+```
+
+모바일에서는:
+
+```text
+Padding
+↓
+Label
+↓
+Headline
+↓
+Description
+↓
+Input / Card
+↓
+Primary CTA
+```
+
+한 열 구조를 유지합니다.
+
+---
+
+## Card
+
+Growth Log의 활동/콘텐츠 카드처럼 질문과 세션을 하나의 명확한 영역으로 구분합니다.
+
+카드는 장식 요소보다는
+
+- 충분한 여백
+- 명확한 Border
+- 작은 Radius
+- 강한 Typography
+
+를 중심으로 구성합니다.
+
+과도한 Glassmorphism, Gradient, Neon UI는 사용하지 않습니다.
+
+---
+
+## Color
+
+별도의 Coffee Chat 브랜드 컬러를 만들지 않습니다.
+
+Growth Log 본 사이트에서 사용하는
+
+- Background
+- Text
+- Primary
+- Muted
+- Border
+
+스타일을 그대로 가져오는 것을 원칙으로 합니다.
+
+Coffee Chat의 `☕`, `🎲`, `💬` 등은 기능을 구분하는 작은 포인트로만 사용합니다.
+
+---
+
+## Motion
+
+Animation 역시 최소한으로 사용합니다.
+
+### 사용
+
+- Button Hover
+- Page Fade
+- Waiting Pulse
+- Roulette Text Transition
+- Result Card 등장
+
+### 사용하지 않음
+
+- 과도한 Particle
+- Confetti
+- 3D Roulette
+- 화면 전체가 움직이는 Animation
+
+Growth Log의 차분한 커뮤니티 느낌 안에서 **Roulette 부분만 살짝 재미있게** 만드는 방향입니다.
+
+---
+
+# Responsive
+
+행사장에서 스마트폰으로 사용하는 상황을 우선합니다.
+
+### Mobile First
+
+- 큰 Input
+- 큰 CTA
+- 한 손으로 누르기 쉬운 버튼
+- 질문 카드 높은 가독성
+- Scroll을 최소화
+- 화면 하나에서 핵심 행동 하나만 제공
+
+목표는 첫 화면 접속 후 설명을 읽지 않아도 사용할 수 있는 것입니다.
+
+---
+
+# Tech
+
+| 영역 | 구성 |
+|---|---|
+| Web | HTML / CSS / JavaScript |
+| AI | User's Claude / ChatGPT |
+| Integration | Remote MCP |
+| Session | Server Memory |
+| Database | 없음 |
+| LLM API | 없음 |
+| Deploy | Static Web + MCP Server |
+
+---
+
+# PoC Scope
+
+이번 PoC에서는 다음만 확인합니다.
+
+- 단어 입력
+- 세션 생성
+- 사용자 AI와 MCP 연결
+- AI 질문 생성
+- 질문 웹 전달
+- 안전 필터
+- Roulette
+- 다시 돌리기
+
+다음 기능은 구현하지 않습니다.
+
+- 회원가입 / 로그인
+- 사용자 프로필
+- 참가자 매칭
+- 채팅
+- History
+- Database
+- 서버 LLM API
+- QR
+- Networking Bingo
+
+---
+
+# Success
+
+PoC가 성공하면 다음 경험이 완성됩니다.
+
+```text
+"게임"
+↓
+내 AI에게 질문 요청
+↓
+질문 5개 생성
+↓
+🎰
+↓
+"인생 게임 OST 하나를 고른다면?"
+↓
+첫 대화 시작
+```
+
+---
+
+## Coffee Chat Roulette
+
+**단어 하나로 첫 대화를 시작합니다.**
+
+`GROW TOGETHER · TALK TOGETHER`
