@@ -188,7 +188,7 @@ git worktree add ../growth-chat-codex -b feat/mcp-server  # B
 - The main checkout (`growth-chat/`) is for `main` only. Do not edit code or commit there.
 - Before editing, run `git branch --show-current`. If it prints `main`, stop and tell the user.
 - Never read or write the other owner's worktree path.
-- Shared files (`AGENTS.md`, `CONVENTION.md`, `CLAUDE.md`, `README.md`, `PRD.kimm.md`, `.gitignore`) are not edited inside a worktree. Ask the user instead.
+- Shared files (`AGENTS.md`, `CONVENTION.md`, `CLAUDE.md`, `README.md`, `.gitignore`) are not edited inside a worktree. Ask the user instead.
 - Do not create files at the repository root; keep dependency files inside your own directory (e.g. `server/package.json`).
 - Sync with `git fetch origin && git rebase origin/main` before starting and before opening a PR.
 - Merge to `main` only through a GitHub PR merged by a human. If a conflict appears, do not resolve it yourself; report it to the user.
