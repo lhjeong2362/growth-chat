@@ -591,3 +591,71 @@ PoC가 성공하면 다음 경험이 완성됩니다.
 **단어 하나로 첫 대화를 시작합니다.**
 
 `GROW TOGETHER · TALK TOGETHER`
+
+---
+
+# 서버 실행 & 로컬 연결 테스트
+
+## 서버 실행
+
+```bash
+cd server
+npm install
+npm start      # http://localhost:3000 (MCP: /mcp)
+npm test       # 세션 → get_request → submit_questions → ready, 안전 필터 E2E
+```
+
+환경 변수: `PORT`(기본 `3000`), `WEB_ORIGIN`(CORS 허용 Origin, 기본 `*`).
+
+## 테스트용 세션 만들기
+
+웹 없이도 세션을 만들어 테스트할 수 있습니다.
+
+```bash
+curl -X POST -H 'Content-Type: application/json' \
+  http://localhost:3000/session -d '{"word":"게임"}'
+# → {"session":"ABCD"}
+
+curl http://localhost:3000/session/ABCD
+# AI가 제출하면 → {"status":"ready","questions":[...]}
+```
+
+## 공개 URL 열기 (claude.ai · ChatGPT용)
+
+claude.ai와 ChatGPT는 클라우드에서 MCP 서버에 접속하므로 `localhost`에 바로 붙지 못합니다. 터널로 공개 HTTPS URL을 만듭니다.
+
+```bash
+npx cloudflared tunnel --url http://localhost:3000
+# → https://xxxx.trycloudflare.com  (MCP URL: https://xxxx.trycloudflare.com/mcp)
+```
+
+터널을 다시 띄우면 URL이 바뀌므로 커넥터 URL도 다시 등록해야 합니다.
+
+## AI별 연결
+
+| AI | 연결 방법 | URL |
+| --- | --- | --- |
+| Claude Code | `claude mcp add --transport http coffee-chat http://localhost:3000/mcp` | localhost 가능 |
+| Claude (claude.ai / Desktop) | Settings → Connectors → Add custom connector | 터널 `https://…/mcp` |
+| ChatGPT | Settings → Apps & Connectors → Advanced → Developer mode 켜기 → Create, 인증 `No authentication` | 터널 `https://…/mcp` |
+| Gemini CLI | `~/.gemini/settings.json` 또는 프로젝트 `.gemini/settings.json`에 아래 설정 | localhost 가능 |
+
+```json
+{
+  "mcpServers": {
+    "coffee-chat": { "httpUrl": "http://localhost:3000/mcp" }
+  }
+}
+```
+
+## 질문 생성 테스트
+
+1. 위 curl 또는 웹에서 세션 코드를 발급합니다.
+2. 연결한 AI에게 보냅니다.
+
+   ```text
+   커피챗 세션 ABCD 질문 만들어줘. 나는 백엔드 개발자고 보드게임을 좋아해.
+   ```
+
+   직무·관심사를 적으면 질문에 반영되고, 적지 않으면 AI가 한 번 물어봅니다. 이 정보는 서버에 저장되지 않습니다.
+3. AI가 `get_request` → `submit_questions`를 호출하면 `GET /session/ABCD`가 `ready`로 바뀌고 웹이 룰렛으로 전환됩니다.
