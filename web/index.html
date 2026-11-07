@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="키워드 하나로 오늘의 커피챗 질문을 뽑아보세요."
+    />
+    <title>Coffee Chat Roulette</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brand" href="./" aria-label="Coffee Chat Roulette 처음으로">
+          <span class="brand-mark" aria-hidden="true">●</span>
+          GROWTH LOG
+        </a>
+      </header>
+
+      <main class="app" id="app">
+        <section class="screen" data-screen="input" aria-labelledby="input-title">
+          <p class="eyebrow">COFFEE CHAT</p>
+          <h1 id="input-title">처음 만난 사람과<br />무슨 이야기를 할까요?</h1>
+          <p class="description">대화하고 싶은 주제를 하나만 입력해보세요.</p>
+
+          <form class="keyword-form" id="keyword-form" novalidate>
+            <label class="field-label" for="keyword-input">대화 키워드</label>
+            <input
+              id="keyword-input"
+              name="word"
+              type="text"
+              maxlength="20"
+              placeholder="예: 게임"
+              autocomplete="off"
+              aria-describedby="keyword-error"
+            />
+            <p class="field-message" id="keyword-error" role="alert"></p>
+            <button class="button button-primary" id="create-session-button" type="submit">
+              질문 만들기 <span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          <div class="examples" aria-label="추천 키워드">
+            <p>이런 주제는 어때요?</p>
+            <div class="keyword-list">
+              <button class="keyword-chip" type="button" data-keyword="AI">AI</button>
+              <button class="keyword-chip" type="button" data-keyword="여행">여행</button>
+              <button class="keyword-chip" type="button" data-keyword="게임">게임</button>
+              <button class="keyword-chip" type="button" data-keyword="커피">커피</button>
+              <button class="keyword-chip" type="button" data-keyword="개발">개발</button>
+              <button class="keyword-chip" type="button" data-keyword="음악">음악</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="waiting" aria-labelledby="waiting-title" hidden>
+          <p class="eyebrow">COFFEE CHAT</p>
+          <h1 id="waiting-title">AI에게 질문을<br />부탁해볼까요?</h1>
+
+          <div class="session-block">
+            <p class="session-label">SESSION</p>
+            <p class="session-code" id="session-code">----</p>
+          </div>
+
+          <p class="description waiting-description">아래 문장을 내 AI에게 보내주세요.</p>
+          <div class="prompt-card">
+            <p id="ai-prompt">커피챗 세션 ---- 질문 만들어줘</p>
+          </div>
+          <button class="button button-primary" id="copy-prompt-button" type="button">
+            문장 복사하기
+          </button>
+          <p class="copy-feedback" id="copy-feedback" aria-live="polite"></p>
+
+          <ol class="steps">
+            <li>문장을 복사하세요.</li>
+            <li>Claude 또는 ChatGPT에 붙여넣으세요.</li>
+            <li>질문이 도착할 때까지 이 화면에서 기다려주세요.</li>
+          </ol>
+
+          <div class="waiting-status" role="status">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            질문을 기다리고 있어요
+          </div>
+        </section>
+
+        <section class="screen screen-centered" data-screen="roulette" aria-labelledby="roulette-title" hidden>
+          <p class="eyebrow">COFFEE CHAT</p>
+          <h1 id="roulette-title">오늘 어떤 이야기가<br />나올까요?</h1>
+          <div class="roulette-symbol" aria-hidden="true">☕</div>
+          <div class="question-card question-card-roulette" aria-live="polite">
+            <p id="roulette-question">질문을 고르고 있어요…</p>
+          </div>
+        </section>
+
+        <section class="screen screen-centered" data-screen="result" aria-labelledby="result-title" hidden>
+          <p class="eyebrow">TODAY'S QUESTION</p>
+          <h1 id="result-title">오늘의 첫 질문</h1>
+          <div class="question-card question-card-result">
+            <span class="question-mark" aria-hidden="true">“</span>
+            <p id="result-question"></p>
+          </div>
+          <button class="button button-primary" id="reroll-button" type="button">
+            <span aria-hidden="true">🎲</span> 다른 질문 뽑기
+          </button>
+          <button class="button button-text" id="restart-button" type="button">
+            새로운 주제로 시작하기
+          </button>
+        </section>
+
+        <section class="screen screen-centered" data-screen="error" aria-labelledby="error-title" hidden>
+          <p class="eyebrow">COFFEE CHAT</p>
+          <div class="error-symbol" aria-hidden="true">!</div>
+          <h1 id="error-title">질문을 불러오지 못했어요</h1>
+          <p class="description" id="error-message">잠시 후 다시 시도해주세요.</p>
+          <button class="button button-primary" id="error-retry-button" type="button">
+            처음으로 돌아가기
+          </button>
+        </section>
+      </main>
+
+      <footer class="site-footer">GROW TOGETHER · TALK TOGETHER</footer>
+    </div>
+  </body>
+</html>
