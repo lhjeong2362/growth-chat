@@ -1,97 +1,195 @@
-# Agent 작업 지침 (Claude Code · Codex 공통)
+# Coffee Chat Roulette — Agent Guide
 
-이 저장소는 두 사람이 서로 다른 AI 도구로 동시에 개발한다.
+Coffee Chat Roulette is a Growth Log event PoC. A visitor enters one keyword; their own Claude or ChatGPT, connected through MCP, generates safe icebreaker questions; the web page selects one through a roulette interaction.
 
-| 담당 | 도구        | 브랜치            | worktree 경로          | 소유 디렉터리 |
-| ---- | ----------- | ----------------- | ---------------------- | ------------- |
-| A    | Claude Code | `feat/web`        | `../growth-chat-cc`    | `web/`        |
-| B    | Codex       | `feat/mcp-server` | `../growth-chat-codex` | `server/`     |
+## Goal and scope
 
-명세는 `PRD.kimm.md`를 따른다. 범위 밖 기능은 만들지 않는다.
-
----
-
-## 1. 반드시 worktree에서 작업한다
-
-메인 체크아웃(`growth-chat/`)은 `main` 전용이다. **여기서 코드를 수정하거나 커밋하지 않는다.**
-
-최초 1회 (각자 자기 줄만 실행):
-
-```bash
-cd growth-chat
-git pull origin main
-
-# A (Claude Code)
-git worktree add ../growth-chat-cc -b feat/web
-
-# B (Codex)
-git worktree add ../growth-chat-codex -b feat/mcp-server
-```
-
-작업 시작 전 확인:
-
-```bash
-git worktree list
-git branch --show-current   # feat/web 또는 feat/mcp-server 여야 한다
-```
-
-- 현재 브랜치가 `main`이면 **아무것도 수정하지 말고 멈춘 뒤** 사용자에게 알린다.
-- 상대방의 worktree 경로(`../growth-chat-cc`, `../growth-chat-codex`)에는 읽기·쓰기 모두 하지 않는다.
-
----
-
-## 2. 파일 소유권
-
-| 경로                                                               | 소유자          | 규칙                                                |
-| ------------------------------------------------------------------ | --------------- | --------------------------------------------------- |
-| `web/**`                                                           | A (Claude Code) | B는 수정 금지                                       |
-| `server/**`                                                        | B (Codex)       | A는 수정 금지                                       |
-| `PRD.kimm.md`, `README.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore` | 공유            | worktree에서 수정 금지. 바꿔야 하면 사용자에게 요청 |
-
-- 자기 소유 디렉터리 밖의 파일을 고쳐야 할 것 같으면 **고치지 말고 사용자에게 보고**한다.
-- 루트에 새 파일(`package.json` 등)을 만들지 않는다. 의존성 파일은 각자 디렉터리 안에 둔다 (`server/package.json`).
-
----
-
-## 3. 두 영역 사이의 계약 (변경 금지)
-
-`web/`와 `server/`는 아래 HTTP 계약으로만 연결된다. 상대 코드를 import하지 않는다.
+The end-to-end flow is the product:
 
 ```text
-POST /session
-  body: { participants: [{ id, name, info }] }
-  res:  { code: "ABCD" }
-
-GET /session/:code
-  res:  { status: "waiting" | "ready", personal: [{ id, questions: [] }], common: [] }
+Keyword → session → user's AI + MCP → questions → polling → roulette → conversation
 ```
 
-- 계약을 바꿔야 하면 코드를 고치기 전에 사용자에게 먼저 알린다. 양쪽이 합의한 뒤 이 섹션을 갱신한다.
-- 상대 쪽이 아직 없을 때는 각자 목업으로 개발한다 (A는 가짜 응답, B는 `curl`).
+- The server must **not** call an LLM API or require OpenAI/Anthropic API keys.
+- The PoC is a static vanilla web client plus a Node.js remote MCP/HTTP server.
+- Complete the core path before visual polish or extra features.
 
----
+Out of scope: login, accounts, database, profiles, participant matching, history, QR, WebSocket, React/Next.js, state-management libraries, and extra MCP tools.
 
-## 4. 커밋 · 병합
+## Project layout
 
-- 커밋은 자기 브랜치에만 한다. `main`에 직접 커밋하거나 push하지 않는다.
-- 커밋 메시지 접두어: `web:` / `server:`
-- 작업 시작 전과 PR 전에 `main`을 받아온다:
+```text
+web/
+  index.html
+  style.css
+  app.js
+server/
+  server.js
+  session.js
+  safety.js
+  package.json
+AGENTS.md
+CONVENTION.md
+```
+
+## Parallel ownership
+
+| Owner | Owns | Responsibilities |
+| --- | --- | --- |
+| A — Web/UI | `web/**` | Keyword input, session creation, copied AI prompt, 2-second polling, waiting/roulette/result states, reroll, Growth Log visual treatment |
+| B — Server/MCP | `server/**` | Node HTTP server, CORS, sessions, TTL, MCP tools, safety filtering |
+
+Each owner should be able to develop independently: A uses a mock API until the server is ready; B verifies endpoints and MCP tools directly. Do not edit the other owner’s area unless it is necessary and agreed first. Keep changes to shared documents small and coordinate them before merging.
+
+## Fixed web API contract
+
+Do not rename fields, change response shapes, or change status names without agreement by both owners.
+
+### `POST /session`
+
+Request:
+
+```json
+{ "word": "게임" }
+```
+
+Success response:
+
+```json
+{ "session": "ABCD" }
+```
+
+### `GET /session/:code`
+
+Waiting:
+
+```json
+{ "status": "waiting", "questions": [] }
+```
+
+Ready:
+
+```json
+{ "status": "ready", "questions": ["인생 게임 OST 하나를 고른다면?"] }
+```
+
+All submitted questions filtered out:
+
+```json
+{ "status": "empty", "questions": [] }
+```
+
+Expired:
+
+```json
+{ "status": "expired", "questions": [] }
+```
+
+The web client polls every 2 seconds while the session is waiting. Server errors use a consistent shape, for example:
+
+```json
+{ "error": "SESSION_NOT_FOUND", "message": "Session not found." }
+```
+
+## Fixed MCP contract
+
+Only these two tools belong in the PoC.
+
+### `get_request`
+
+Input:
+
+```json
+{ "session": "ABCD" }
+```
+
+Output:
+
+```json
+{
+  "word": "게임",
+  "tone": "신박",
+  "count": 5,
+  "rules": [
+    "처음 만난 사람에게 가볍게 물어볼 수 있는 질문",
+    "30초 안에 답할 수 있는 질문",
+    "민감 정보, 성적 질문, 비난·평가 질문 금지"
+  ]
+}
+```
+
+### `submit_questions`
+
+Input:
+
+```json
+{
+  "session": "ABCD",
+  "questions": ["인생 게임 OST 하나를 고른다면?", "연봉이 얼마예요?"]
+}
+```
+
+Output:
+
+```json
+{ "stored": 1, "filtered": 1 }
+```
+
+## Session and safety rules
+
+- Store sessions only in an in-memory `Map`; server restarts may clear them.
+- Default session TTL is 30 minutes. Expire and clean stale sessions regularly.
+- Use short, readable session codes and exclude ambiguous characters such as `O`, `0`, `I`, and `1`.
+- A session includes `code`, `word`, `tone`, `count`, `rules`, `questions`, and `createdAt`.
+- Calculate state from session data; do not add unnecessary state flags.
+- Filter every submitted question before storing it. The filter blocks sexual content, romance/dating, income/assets, age, marriage/childbirth, religion, politics, health, appearance evaluation, ability criticism, and questions likely to embarrass someone.
+- Keep the keyword list and filtering logic in `server/safety.js`; do not duplicate it across files.
+- Do not log full questions or potentially sensitive input unnecessarily.
+
+## UI principles
+
+Follow the Growth Log tone: mobile-first, one clear action per screen, a large Korean headline with a small English label, generous whitespace, simple borders, and a clear CTA. Avoid heavy gradients, neon, glassmorphism, and excessive motion. The roulette is the one light playful moment.
+
+The only app states are:
+
+```text
+INPUT → WAITING → ROULETTE → RESULT
+                 └→ ERROR
+```
+
+The waiting screen shows the session code and a copyable prompt such as `커피챗 세션 ABCD 질문 만들어줘`. Reroll should avoid immediately repeating the displayed question when alternatives exist.
+
+## Priorities and done criteria
+
+1. P0: keyword → session → MCP → question storage → browser receives `ready`.
+2. P1: safety filtering and expiration behavior.
+3. P2: roulette and reroll experience.
+4. P3: visual polish.
+
+The PoC is done once a user can enter `게임`, create a session, ask their connected AI to generate questions for that code, receive questions through `submit_questions`, and see one safe question selected in the browser. Preserve the shared contracts while making changes.
+
+## Worktree rules (Claude Code · Codex)
+
+A and B work in separate git worktrees so their changes never overlap.
+
+| Owner | Tool | Branch | Worktree path | Owns |
+| --- | --- | --- | --- | --- |
+| A | Claude Code | `feat/web` | `../growth-chat-cc` | `web/**` |
+| B | Codex | `feat/mcp-server` | `../growth-chat-codex` | `server/**` |
+
+One-time setup (each person runs only their own line):
 
 ```bash
-git fetch origin && git rebase origin/main
+cd growth-chat && git pull origin main
+git worktree add ../growth-chat-cc -b feat/web            # A
+git worktree add ../growth-chat-codex -b feat/mcp-server  # B
 ```
 
-- `main` 병합은 GitHub PR로 하고, 사용자가 직접 머지한다.
-- 파일 소유권을 지켰다면 충돌은 공유 파일에서만 난다. 충돌이 나면 해결하지 말고 사용자에게 알린다.
-
----
-
-## 5. 정리
-
-병합이 끝난 뒤:
-
-```bash
-cd growth-chat
-git worktree remove ../growth-chat-cc      # 또는 ../growth-chat-codex
-git branch -d feat/web                      # 또는 feat/mcp-server
-```
+- The main checkout (`growth-chat/`) is for `main` only. Do not edit code or commit there.
+- Before editing, run `git branch --show-current`. If it prints `main`, stop and tell the user.
+- Never read or write the other owner's worktree path.
+- Shared files (`AGENTS.md`, `CONVENTION.md`, `CLAUDE.md`, `README.md`, `PRD.kimm.md`, `.gitignore`) are not edited inside a worktree. Ask the user instead.
+- Do not create files at the repository root; keep dependency files inside your own directory (e.g. `server/package.json`).
+- Sync with `git fetch origin && git rebase origin/main` before starting and before opening a PR.
+- Merge to `main` only through a GitHub PR merged by a human. If a conflict appears, do not resolve it yourself; report it to the user.
+- After merging: `git worktree remove <path>` and `git branch -d <branch>`.
